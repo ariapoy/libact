@@ -153,7 +153,7 @@ class CSRPE():
                  metric='euclidean', random_state=None):
         self.scoring_fn = scoring_fn
         self.base_clf = base_clf
-        self.nn_ = NearestNeighbors(1, algorithm='ball_tree',
+        self.nn_ = NearestNeighbors(n_neighbors=1, algorithm='ball_tree',
                 metric=metric, n_jobs=n_jobs)
         self.n_clfs = n_clfs
         self.random_state_ = seed_random_state(random_state)
