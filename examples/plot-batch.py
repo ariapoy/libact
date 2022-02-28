@@ -25,6 +25,7 @@ import sys
 sys.path.append("./")
 from libact_dev.query_strategies import RandomSampling as RS_dev
 from libact_dev.query_strategies import UncertaintySampling as US_dev
+from libact_dev.query_strategies import KCenterGreedy
 
 import pdb
 def run(trn_ds, tst_ds, lbr, model, qs, quota, batch_size=5):
@@ -88,6 +89,7 @@ def main():
     trn_ds, tst_ds, y_train, fully_labeled_trn_ds = \
         split_train_test(dataset_filepath, test_size, n_labeled)
     trn_ds2 = copy.deepcopy(trn_ds)
+    trn_ds3 = copy.deepcopy(trn_ds)
     lbr = IdealLabeler(fully_labeled_trn_ds)
 
     quota = len(y_train) - n_labeled    # number of samples to query
@@ -104,6 +106,10 @@ def main():
     qs2 = RS_dev(trn_ds2)
     model = LogisticRegression()
     E_in_2, E_out_2 = run(trn_ds2, tst_ds, lbr, model, qs2, quota, batch_size)
+
+    qs3 = KCenterGreedy(trn_ds3, transformer=None)
+    model = LogisticRegression()
+    E_in_3, E_out_3 = run(trn_ds3, tst_ds, lbr, model, qs3, quota, batch_size)
 
     # Plot the learning curve of UncertaintySampling to RandomSampling
     # The x-axis is the number of queries, and the y-axis is the corresponding
