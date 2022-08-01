@@ -1,5 +1,7 @@
 """scikit-learn classifier adapter
 """
+import numpy as np
+
 from sklearn.base import clone
 from libact.base.interfaces import Model, ContinuousModel, ProbabilisticModel
 
@@ -50,7 +52,7 @@ class SklearnAdapter(Model):
                                 **kwargs)
 
     def clone(self):
-        return SklearnProbaAdapter(clone(self._model))
+        return SklearnAdapter(clone(self._model))
 
 
 class SklearnProbaAdapter(ProbabilisticModel):
@@ -109,3 +111,36 @@ class SklearnProbaAdapter(ProbabilisticModel):
 
     def clone(self):
         return SklearnProbaAdapter(clone(self._model))
+
+class SklearnContiAdapter(ContinuousModel):
+
+    """
+    """
+
+    def __init__(self, clf):
+        self._model = clf
+
+    def train(self, dataset, *args, **kwargs):
+        return self._model.fit(*(dataset.format_sklearn() + args), **kwargs)
+
+    def predict(self, feature, *args, **kwargs):
+        return self._model.predict(feature, *args, **kwargs)
+
+    def score(self, testing_dataset, *args, **kwargs):
+        return self._model.score(*(testing_dataset.format_sklearn() + args),
+                                **kwargs)
+
+    # def predict_real(self, feature, *args, **kwargs):
+    #     return self._model.decision_function(feature, *args, **kwargs)
+    def predict_real(self, feature, *args, **kwargs):
+        dvalue = self._model.decision_function(feature, *args, **kwargs)
+        if len(np.shape(dvalue)) == 1:  # n_classes == 2
+            return np.vstack((-dvalue, dvalue)).T
+        else:
+            if self.decision_function_shape != 'ovr':
+                LOGGER.warn("SVM model support only 'ovr' for multiclass"
+                            "predict_real.")
+            return dvalue
+
+    def clone(self):
+        return SklearnContiAdapter(clone(self._model))

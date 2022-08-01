@@ -83,9 +83,9 @@ class UncertaintySampling(QueryStrategy):
         self.model.train(self.dataset)
 
         self.method = kwargs.pop('method', 'lc')
-        if self.method not in ['lc', 'sm', 'entropy']:
+        if self.method not in ['lc', 'sm', 'entropy', 'margin']:
             raise TypeError(
-                "supported methods are ['lc', 'sm', 'entropy'], the given one "
+                "supported methods are ['lc', 'sm', 'entropy', 'margin'], the given one "
                 "is: " + self.method
             )
 
@@ -116,6 +116,16 @@ class UncertaintySampling(QueryStrategy):
 
         elif self.method == 'entropy':
             score = np.sum(-dvalue * np.log(dvalue), axis=1)
+
+        elif self.method == 'margin':
+            # https://github.com/ariapoy/active-learning/blob/master/sampling_methods/margin_AL.py
+            if len(dvalue.shape) < 2:
+                min_margin = abs(dvalue)
+            else:
+                sort_distances = np.sort(dvalue, 1)[:, -2:]
+                min_margin = sort_distances[:, 1] - sort_distances[:, 0]
+            score = min_margin
+
         return zip(unlabeled_entry_ids, score)
 
 
