@@ -387,7 +387,11 @@ class Exp4P(object):
             if self.uniform_sampler:
                 query[-1, :] = 1. / len(self.unlabeled_invert_id_idx)
             for i, model in enumerate(self.query_strategies_):
-                query[i][self.unlabeled_invert_id_idx[model.make_query()]] = 1
+                quired_idx = model.make_query()
+                if isinstance(quired_idx, list):
+                    # TODO: support batch query
+                    quired_idx = quired_idx[0]  # only support instance-based query
+                query[i][self.unlabeled_invert_id_idx[quired_idx]] = 1
 
             # choice vector, shape = (self.K, )
             W = np.sum(self.w)
