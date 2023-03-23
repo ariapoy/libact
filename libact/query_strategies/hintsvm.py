@@ -117,6 +117,9 @@ class HintSVM(QueryStrategy):
         self.random_state_ = seed_random_state(random_state)
 
         # svm solver parameters
+        ## clone from task-oriented model
+        self.model = kwargs.get('model', None)
+        ## user define svm params
         self.svm_params = {}
         self.svm_params['kernel'] = kwargs.pop('kernel', 'linear')
         self.svm_params['degree'] = kwargs.pop('degree', 3)
@@ -128,6 +131,19 @@ class HintSVM(QueryStrategy):
         self.svm_params['verbose'] = kwargs.pop('verbose', 0)
 
         self.svm_params['C'] = self.cl
+        # print('clone models')
+        if self.model is not None:
+            self.svm_params.update(self.model._model.get_params())
+
+        # adapt for sklearn
+        X = self.dataset._X.copy()
+        if self.svm_params['gamma'] == 'auto':
+            self.svm_params['gamma'] = 1.0 / X.shape[1]
+        elif self.svm_params['gamma'] == 'scale':
+            X_var = (X.multiply(X)).mean() - (X.mean()) ** 2 if sparse else X.var()
+            self.svm_params['gamma'] = 1.0 / (X.shape[1] * X_var) if X_var != 0 else 1.0
+
+        del X
 
     @inherit_docstring_from(QueryStrategy)
     def make_query(self):
