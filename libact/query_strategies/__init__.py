@@ -17,6 +17,8 @@ from .density_weighted_uncertainty_sampling import DWUS
 # don't import c extentions when on readthedocs server
 from .density_weighted_meta import DensityWeightedMeta
 from .kcenter_greedy import KCenterGreedy
+from .epsilon_greedy import EpsilonGreedy
+from .us_softmax import USSoftmax
 if not ON_RTD:
     try:
         from ._variance_reduction import estVar
@@ -47,5 +49,7 @@ __all__ = [
     'UncertaintySampling',
     'VarianceReduction',
     'DensityWeightedMeta',
-    'KCenterGreedy'
+    'KCenterGreedy',
+    'EpsilonGreedy',
+    'USSoftmax',
 ]
