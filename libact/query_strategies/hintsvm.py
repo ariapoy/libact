@@ -148,6 +148,11 @@ class HintSVM(QueryStrategy):
     @inherit_docstring_from(QueryStrategy)
     def make_query(self):
         dataset = self.dataset
+        # TODO address a conflict with XGBoost input
+        # HintSVM: y = [-1, 1]; XGBoost: y = [0, 1]
+        self.dataset._y[self.dataset._y==0] = -1
+        self.dataset._y[self.dataset._y==1] = self.dataset._y[self.dataset._y==1].astype(int)
+
         unlabeled_entry_ids, unlabeled_pool = dataset.get_unlabeled_entries()
         labeled_pool, y = dataset.get_labeled_entries()
         if len(np.unique(y)) > 2:
@@ -173,4 +178,9 @@ class HintSVM(QueryStrategy):
 
         p_val = [abs(float(val[0])) for val in p_val]
         idx = int(np.argmax(p_val))
+
+        # TODO address a conflict with XGBoost input
+        # HintSVM: y = [-1, 1]; XGBoost: y = [0, 1]
+        self.dataset._y[self.dataset._y==-1] = 0
+
         return unlabeled_entry_ids[idx]
